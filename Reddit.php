@@ -177,10 +177,33 @@ class Reddit {
 		$match = array();
 		$results = preg_match("@<span class=\"number\">(.+?)</span>@m", $result['response'], $match);
 		
-		if($results <= 0)
+		if ($results <= 0)
 			return null;
 
 		return $match[0];
+	}
+	
+    public function getSubredditage($r) {
+		$result = HTTP::get("http://www.reddit.com/r/$r/", $this->cj);
+		$match = array();
+		$results = preg_match("@<span class=\"age\">a community for (.+?)</span>@m", $result['response'], $match);
+		
+		if ($results <= 0)
+			return null;
+
+		return $match[1];
+	}
+	
+	public function getSubredditcreator($r) {
+		$result = HTTP::get("http://www.reddit.com/r/$r/", $this->cj);
+		$match = array();
+		
+		$results = preg_match_all("@created by &#32;<a href=\"(.+?)\" class=\"author\" >(.+?)</a>@m", $result['response'], $match);
+		
+		if ($results <= 0)
+			return null;
+        
+        return $match[1][0];
 	}
 }
 ?>
