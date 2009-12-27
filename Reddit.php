@@ -171,5 +171,16 @@ class Reddit {
 		$text = urlencode($text);
 		HTTP::post("http://www.reddit.com/api/compose", "uh=" . $this->modhash() . "&to=$to&subject=$subject&thing_id=&text=$text&id=%23compose-message", $this->cj);
 	}
+	
+	public function getReadercount($r) {
+		$result = HTTP::get("http://www.reddit.com/r/$r/", $this->cj);
+		$match = array();
+		$results = preg_match("@<span class=\"number\">(.+?)</span>@m", $result['response'], $match);
+		
+		if($results <= 0)
+			return null;
+
+		return $match[0];
+	}
 }
 ?>
