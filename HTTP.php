@@ -2,10 +2,16 @@
 require_once "CookieJar.php";
 
 class HTTP {
-	private static function request($url, $cookiejar = null, $params) {
+	public function __construct($cookiejar = null) {
+		if ($cookiejar == null)
+			$cookiejar = new CookieJar();
+		$this->cookiejar = $cookiejar;
+	}
+
+	private function request($url, $params) {
 		// Handle cookie jar. 
-		if ($cookiejar != null && is_object($cookiejar))
-			$params ['http'] ['header'] = "Cookie: " . $cookiejar->toString();
+		if ($this->cookiejar != null && is_object($this->cookiejar))
+			$params ['http'] ['header'] = "Cookie: " . $this->cookiejar->toString();
 		
 		$ctx = stream_context_create ($params);
 		$fp = fopen($url, 'rb', false, $ctx);
@@ -19,23 +25,23 @@ class HTTP {
 			throw new Exception ( "Problem reading data from $url, $php_errormsg" );
 		
 		// Maintain the cookiejar
-		if($cookiejar != null)
+		if($this->cookiejar != null)
 			foreach ($meta_response['wrapper_data'] as $key => $value) 
-				$cookiejar->merge(new CookieJar($value));
+				$this->cookiejar->merge(new CookieJar($value));
 		
 		return array('headers' => $meta_response, 'response' => $response);
 	}
 	
-	public static function post($url, $data, $cookiejar = null) {
+	public function post($url, $data) {
 		$params = array ('http' => array ('method' => 'POST', 'content' => $data ) );
 		
-		return HTTP::request($url, $cookiejar, $params);
+		return $this->request($url, $params);
 	}
 	
-	public static function get($url, $cookiejar = null) {
+	public function get($url) {
 		$params = array ('http' => array ('method' => 'GET') );
 		
-		return HTTP::request($url, $cookiejar, $params);
+		return $this->request($url, $params);
 	}
 }
 ?>
