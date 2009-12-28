@@ -20,6 +20,14 @@ class User {
 		// TODO: Construct a new User() from a session cookie.
 	}
 
+	public function httpGet($url) {
+		return $this->http->get($url);
+	}
+
+	public function httpPost($url, $data) {
+		return $this->http->post($url, $data);
+	}
+
 	private function login($user, $pass) {
 		$this->http->post("http://www.reddit.com/api/login/$user", "user=$user&passwd=$pass");
 	}
@@ -75,33 +83,36 @@ class User {
 		return $this->_modhash['hash'];
 	}	
 
-	private function getJSONProp($cache = false) {
+	private function getJSONProp($path, $cache = false) {
 		if($this->user == null)
 			return null;
-
+		
 		// TODO: Handle 404s
 		if($cache == false || $this->_json == null)
 			$this->_json = $this->http->get("http://www.reddit.com/user/{$this->user}/about.json");
-
-		return json_decode($this->_json['response']);
+		
+		$json = json_decode($this->_json['response']);
+		print "$path == {$json->data->created}\n";
+		print "$path == {$json->$path}\n";
+		return $json->$path;
 	}
 
 	public function getProp() {
 		if($this->user == null)
 			return null;
 
-		$json = $this->getJSONProp();
+		/*$json = $this->getJSONProp();
 		if($json == null)
-			return null;
+			return null;*/
 
 		$prop = new _UserProperties($this);
-		$prop->created = $json->data->created;
+		/*$prop->created = $json->data->created;
 		$prop->created_utc = $json->data->created_utc;
 		$prop->comment_karma = $json->data->comment_karma;
 		$prop->id = $json->data->id;
 		$prop->kind = $json->kind;
 		$prop->link_karma = $json->data->link_karma;
-		$prop->name = $json->data->name;
+		$prop->name = $json->data->name;*/
 		return $prop;
 	}
 
@@ -131,6 +142,15 @@ class User {
 }
 
 class _UserProperties extends Properties {
+	private $created;
+	private $created_utc;
+	private $comment_karma;
+	private $id;
+	private $kind;
+	private $link_karma;
+	private $name;
+	private $modhash;
+
 	public function __construct($target) {
 		parent::construct($target);
 		parent::setChild($this);
@@ -138,6 +158,14 @@ class _UserProperties extends Properties {
 
 	protected function _modhash() {
 		return parent::getTarget()->call("modhash");
+	}
+
+	protected function _created() {
+		return parent::getTarget()->call("getJSONProp", array("data->created", true));
+	}
+
+	protected function created_utc() {
+		return parent::getTarget()->call("getJSONProp", array("data->created_utc", true));
 	}
 }
 
