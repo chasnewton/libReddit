@@ -3,6 +3,8 @@ require_once "CookieJar.php";
 
 class HTTP {
 	public function __construct($cookiejar = null) {
+		if ($cookiejar == null)
+			$cookiejar = new CookieJar();
 		$self->cookiejar = $cookiejar;
 	}
 
