@@ -16,7 +16,6 @@ abstract class Properties {
         }
 
 	protected function setChild($child) {
-		print "Child set.";
 		$this->_child = $child;
 	}
 
