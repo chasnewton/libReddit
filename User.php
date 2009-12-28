@@ -92,32 +92,28 @@ class User {
 			$this->_json = $this->http->get("http://www.reddit.com/user/{$this->user}/about.json");
 		
 		$json = json_decode($this->_json['response']);
-		print "$path == {$json->data->created}\n";
-		print "$path == {$json->$path}\n";
-		return $json->$path;
+		
+		// Walk $path 
+		// Note to coder: Future versions of PHP may let you dynamically walk a class without doing this.
+		// TODO: Handle bad paths.
+		$path = preg_split("/->/", $path);
+		foreach($path as $step)
+			$json = $json->$step;
+
+		return $json;
 	}
 
 	public function getProp() {
 		if($this->user == null)
 			return null;
 
-		/*$json = $this->getJSONProp();
-		if($json == null)
-			return null;*/
-
 		$prop = new _UserProperties($this);
-		/*$prop->created = $json->data->created;
-		$prop->created_utc = $json->data->created_utc;
-		$prop->comment_karma = $json->data->comment_karma;
-		$prop->id = $json->data->id;
-		$prop->kind = $json->kind;
-		$prop->link_karma = $json->data->link_karma;
-		$prop->name = $json->data->name;*/
+		$prop->sessionID = $this->getSessionID();
 		return $prop;
 	}
 
 	// Return the user's Session ID, if one exists.
-	public function getSessionID() {
+	private function getSessionID() {
 		if($this->http->cookiejar == null)
 			return null;
 		$cookies = $this->http->cookiejar->getCookies();
@@ -126,7 +122,7 @@ class User {
 		return $cookies['reddit_session'];
 	}
 
-	public function isLoggedOn() {
+	private function isLoggedOn() {
 		if($this->getSessionID() == null)
 			return false;
 		return $this->modhash(false) != null;
@@ -143,30 +139,58 @@ class User {
 
 class _UserProperties extends Properties {
 	private $created;
-	private $created_utc;
-	private $comment_karma;
+	private $createdUtc;
+	private $commentKarma;
 	private $id;
+	private $isLoggedIn;
 	private $kind;
-	private $link_karma;
+	private $linkKarma;
 	private $name;
 	private $modhash;
+
+	public $sessionID;
 
 	public function __construct($target) {
 		parent::construct($target);
 		parent::setChild($this);
 	}
 
-	protected function _modhash() {
-		return parent::getTarget()->call("modhash");
-	}
-
 	protected function _created() {
 		return parent::getTarget()->call("getJSONProp", array("data->created", true));
 	}
 
-	protected function created_utc() {
+	protected function _createdUtc() {
 		return parent::getTarget()->call("getJSONProp", array("data->created_utc", true));
 	}
+
+	protected function _commentKarma() {
+		return parent::getTarget()->call("getJSONProp", array("data->comment_karma", false));
+	}
+
+	protected function _id() {
+		return parent::getTarget()->call("getJSONProp", array("data->id", true));
+	}
+
+	protected function _isLoggedIn() {
+		return parent::getTarget()->call("isLoggedOn");
+	}
+
+	protected function _kind() {
+		return parent::getTarget()->call("getJSONProp", array("kind", true));
+	}
+
+	protected function _linkKarma() {
+		return parent::getTarget()->call("getJSONProp", array("data->link_karma", false));
+	}
+
+	protected function _name() {
+		return parent::getTarget()->call("getJSONProp", array("data->name", true));
+	}
+
+	protected function _modhash() {
+		return parent::getTarget()->call("modhash");
+	}
+
 }
 
 /*class _UserProperties {
