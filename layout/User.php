@@ -5,6 +5,7 @@ require_once "Properties.php";
 class User {
 	private $http;
 	private $_modhash;
+	private $_json;
 
 	function __construct($user = null, $pass = null) {
 		// if $pass != null, get a session cookie from server.
@@ -74,13 +75,15 @@ class User {
 		return $this->_modhash['hash'];
 	}	
 
-	private function getJSONProp() {
+	private function getJSONProp($cache = false) {
 		if($this->user == null)
 			return null;
 
 		// TODO: Handle 404s
-		$json = $this->http->get("http://www.reddit.com/user/{$this->user}/about.json");
-		return json_decode($json['response']);
+		if($cache == false || $this->_json == null)
+			$this->_json = $this->http->get("http://www.reddit.com/user/{$this->user}/about.json");
+
+		return json_decode($this->_json['response']);
 	}
 
 	public function getProp() {
@@ -148,9 +151,9 @@ class _UserProperties extends Properties {
 	public $link_karma;
 	public $name;
 
-	private $_parent;
-	public function __construct($parent) {
-		$this->_parent = $parent;
+	private $_target;
+	public function __construct($target) {
+		$this->_target = $target;
 	}
 
 	public function __get($name) {
@@ -160,7 +163,7 @@ class _UserProperties extends Properties {
 	}
 
 	private function _modhash() {
-		return $this->_parent->call("modhash");
+		return $this->_target->call("modhash");
 	}
 }*/
 ?>
