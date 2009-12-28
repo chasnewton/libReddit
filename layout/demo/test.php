@@ -1,4 +1,4 @@
-<?
+<?php
 class Test {
 	public function __construct() {
 		$r = new Run();
