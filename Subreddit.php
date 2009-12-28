@@ -2,22 +2,51 @@
 require_once "User.php";
 
 class Subreddit {
+    private $html;
+    private $json;
+    
     public function __construct($name, $user = null) {
+        if ($user == null) {
+            $this->user = new User();
+        }
+        else {
+            $this->user = $user;
+        }
         $this->name = $name;
-        $this->user = $user;
 	}
 	
-	public function getHtml() {
-	   return $user->httpGet("http://www.reddit.com/r/" . $this->name);
+	private function getHtml() {
+	   if (isset($this->html)) {
+	       return $this->html;
+	   }
+	   else {
+	       $html = $this->user->httpGet("http://www.reddit.com/r/" . $this->name);
+	       $this->html = $html['response'];
+	       return $this->html;
+	   }
 	}
 	
-	public function getJson() {
-	   $json = $user->httpGet("http://www.reddit.com/r/" . $this->name . "/.json");
-	   return json_decode($json, true);
+	private function getJson() {
+	   if (isset($this->json)) {
+	       return $this->json;
+	   }
+	   else {
+	       $json = $this->user->httpGet("http://www.reddit.com/r/" . $this->name . "/.json");
+	       $this->json = json_decode($json['response'], true);
+	       return $this->json;
+	   }
+	}
+	
+	public function clearHtml() {
+	   unset($this->html);
+	}
+	
+	public function clearJson() {
+	   unset($this->json);
 	}
 	
     public function getAge() {
-        $result = $this->getHtml;
+        $result = $this->getHtml();
         $match = array();
         
         $results = preg_match("@<span class=\"age\">a community for (.+?)</span>@m", $result, $match);
@@ -29,7 +58,7 @@ class Subreddit {
     }
     
     public function getCreator() {
-        $result = $this->getHtml;
+        $result = $this->getHtml();
         $match = array();
 		
         $results = preg_match_all("@created by &#32;<a href=\"(.+?)\" class=\"author\" >(.+?)</a>@m", $result, $match);
@@ -40,8 +69,8 @@ class Subreddit {
         return $match[1][0];
     }
     
-    pubilc function getDescription() {
-        $result = $this->getHtml;
+    public function getDescription() {
+        $result = $this->getHtml();
         $match = array();
         
         $results = preg_match_all("@<div class=\"usertext-body\"><div class=\"md\"><p>(.+?)</p></div>@m", $result, $match);
@@ -59,27 +88,25 @@ class Subreddit {
         
         if ($limit > 5)
             $limit = 5;
-        else if ($limit > 1)
-            $limit = 1;
-        
-        $i = 0;
-        do {
+        else if ($limit < 1)
+            $limit = 1; 
+            
+        for ($i = 0; $i < $limit; $i++) {
             $post = $posts[$i]['data'];
             $output[] = array(
-                              'id' => $post['id'],
-                              'title' => $post['title'],
-                              'author' => $post['author'],
-                              'description' => $post['selftext'],
-                              'url' => $post['url'],
-                              'up' => $post['ups'],
-                              'down' => $post['downs'],
-                              'score' => $post['score'],
-                              'age' => $post['created'],
-                              'comments' => $post['comments'],
-                              'subreddit' => $post['subreddot']
-                             );
-            $i++;
-        } while ($i < $limit-1);
+                  'id' => $post['id'],
+                  'title' => $post['title'],
+                  'author' => $post['author'],
+                  'description' => $post['selftext'],
+                  'url' => $post['url'],
+                  'up' => $post['ups'],
+                  'down' => $post['downs'],
+                  'score' => $post['score'],
+                  'age' => $post['created'],
+                  'comments' => $post['num_comments'],
+                  'subreddit' => $post['subreddit']
+                 );
+        }
         
         return $output;
     }
