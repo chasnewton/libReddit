@@ -83,6 +83,9 @@ class User {
 		return $this->_modhash['hash'];
 	}	
 
+	// Returns a given element of a user's JSON-accessible properties page.
+	// If $cache is true, the element will be returned from a cached copy
+	// of the JSON page, if applicable.
 	private function getJSONProp($path, $cache = false) {
 		if($this->user == null)
 			return null;
@@ -112,6 +115,11 @@ class User {
 		return $prop;
 	}
 
+
+	public function getUsername() {
+		return $this->user;
+	}
+
 	// Return the user's Session ID, if one exists.
 	private function getSessionID() {
 		if($this->http->cookiejar == null)
@@ -122,6 +130,7 @@ class User {
 		return $cookies['reddit_session'];
 	}
 
+	// Return true if the user is logged in and false otherwise.
 	private function isLoggedOn() {
 		if($this->getSessionID() == null)
 			return false;
