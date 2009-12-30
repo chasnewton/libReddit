@@ -14,8 +14,11 @@ class HTTP {
 			$params ['http'] ['header'] = "Cookie: " . $this->cookiejar->toString();
 		
 		$ctx = stream_context_create ($params);
+
+		set_error_handler(array($this, 'HTTPerror'));
 		$fp = fopen($url, 'rb', false, $ctx);
-		
+		restore_error_handler();
+
 		if (!$fp)
 			throw new Exception ("Problem with $url, $php_errormsg");
 		
@@ -42,6 +45,65 @@ class HTTP {
 		$params = array ('http' => array ('method' => 'GET') );
 		
 		return $this->request($url, $params);
+	}
+
+	public function HTTPerror($errno, $errstr, $errfile, $errline) {
+		$exception = null;
+		$timeout = "failed to open stream: HTTP request failed! ";
+
+		if(preg_match("@HTTP request failed! HTTP/.+? 404@",$errstr))
+			$exception = new HTTPException(404, "URL not found.");
+		else if(preg_match("@HTTP request failed! HTTP/.+? 403@",$errstr))
+			$exception = new HTTPException(403, "Forbidden.");
+		else if(preg_match("@HTTP request failed! HTTP/.+? 500@",$errstr))
+			$exception = new HTTPException(500, "Internal server error.");	
+		else if(preg_match("@HTTP request failed! HTTP/.+? 502@",$errstr))
+			$exception = new HTTPException(502, "Bad gateway.");
+		else if(preg_match("@HTTP request failed! HTTP/.+? 503@",$errstr))
+			$exception = new HTTPException(503, "Service Unavailable.");
+		else if(preg_match("@HTTP request failed! HTTP/.+? 504@",$errstr))
+			$exception = new HTTPException(504, "Gateway Timeout.");
+		else if(strstr($errstr,"failed to open stream: Connection refused"))
+			$exception = new TCPException("Connection refused.");
+		// Hackish way to check for TCP Timeout. Check for the absense of
+		// any HTTP errors and just assume the most common TCP error will be
+		// a timeout.
+		else if(strrpos($errstr, $timeout) === strlen($errstr) - strlen($timeout))
+			$exception = new TCPException("Connection timed out.");
+		else
+			$exception = new HTTPException(-1, $errstr);
+
+		if($exception != null) {
+			$php_errormsg = (string)$exception;
+			debug_print_backtrace();
+			restore_error_handler();
+			throw $exception;
+		}
+
+	}
+}
+class TCPException extends Exception {
+	public $error_desc;
+
+	public function __construct($error_desc) {
+		$this->error_desc = $error_desc;
+	}
+
+	public function __toString() {
+		return "TCP Error: {$this->error_desc}";
+	}
+}
+class HTTPException extends Exception {
+	public $error_code;
+	public $error_desc;
+
+	public function __construct($error_code, $error_desc) {
+		$this->error_code = $error_code;
+		$this->error_desc = $error_desc;
+	}
+
+	public function __toString() {
+		return "HTTP Error {$this->error_code}: " . $this->error_desc;
 	}
 }
 ?>
