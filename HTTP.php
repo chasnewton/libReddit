@@ -49,12 +49,12 @@ class HTTP {
 
 	public static function _get($url) {
 		$http = new HTTP(null);
-		$http->get($url);
+		return $http->get($url);
 	}
 
 	public static function _post($url, $data) {
 		$http = new HTTP(null);
-		$http->post($url, $data);
+		return $http->post($url, $data);
 	}
 	public function HTTPerror($errno, $errstr, $errfile, $errline) {
 		$exception = null;
