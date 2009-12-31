@@ -18,11 +18,10 @@ class Message {
 	public $id;
 	public $subject;
 
-	public function __construct(User $dest = null, User $author = null, $body = null) {
-		if($dest != null)
-			$this->dest = $dest->getUsername();
-		if($author != null)
-			$this->author = $author->getUsername();
+	public function __construct(User $dest = null, User $author = null, $subject = null, $body = null) {
+		$this->dest = $dest;
+		$this->author = $author;
+		$this->subject = $subject;
 		$this->body = $body;
 	}
 }

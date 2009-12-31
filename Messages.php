@@ -10,6 +10,16 @@ class Messages {
 			throw new Exception("Messages::__contstruct(): $user is not logged in.");
 		$this->user = $user;
 	}
+	
+	public function sendMessage($msg) {
+		if($msg == null || !($msg instanceof Message))
+			throw new Exception("Messages::sendMessage(): $msg must be a Message object.");
+		$subject = urlencode($msg->subject);
+		$body = urlencode($msg->body);
+		$to = $msg->dest->getUsername();
+		print("URL: http://www.reddit.com/api/compose  " . "uh=" . $this->user->getProp()->modhash . "&to=$to&subject=$subject&thing_id=&text=$body&id=%23compose-message\n");
+		$this->user->httpPost("http://www.reddit.com/api/compose", "uh=" . $this->user->getProp()->modhash . "&to=$to&subject=$subject&thing_id=&text=$body&id=%23compose-message");
+	}
 
 	// Read messages from a user's inbox/sentbox.
 	//

@@ -6,7 +6,7 @@ class Subreddit {
     private $json;
     
     public function __construct($name, $user = null) {
-        if ($user == null) {
+		if ($user == null) {
             $this->user = new User();
         }
         else {
