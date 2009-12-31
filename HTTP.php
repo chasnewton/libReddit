@@ -34,7 +34,7 @@ class HTTP {
 		
 		return array('headers' => $meta_response, 'response' => $response);
 	}
-	
+
 	public function post($url, $data) {
 		$params = array ('http' => array ('method' => 'POST', 'content' => $data, 'header' => "Content-type: application/x-www-form-urlencoded\r\n" ) );
 		
@@ -47,6 +47,15 @@ class HTTP {
 		return $this->request($url, $params);
 	}
 
+	public static function get($url) {
+		$http = new HTTP(null);
+		$http->get($url);
+	}
+
+	public static function post($url, $data) {
+		$http = new HTTP(null);
+		$http->post($url, $data);
+	}
 	public function HTTPerror($errno, $errstr, $errfile, $errline) {
 		$exception = null;
 		$timeout = "failed to open stream: HTTP request failed! ";
