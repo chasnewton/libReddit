@@ -91,10 +91,11 @@ class User {
 			return null;
 		
 		// TODO: Handle 404s
-		if($cache == false || $this->_json == null)
-			$this->_json = $this->http->get("http://www.reddit.com/user/{$this->user}/about.json");
-		
-		$json = json_decode($this->_json['response']);
+		if($cache == false || $this->_json == null || (time() - $this->_json['time']) < 15)
+			$this->_json = array( 'time' => time(), 'json' => $this->http->get("http://www.reddit.com/user/{$this->user}/about.json"));
+
+		$json = $this->_json['json'];	
+		$json = json_decode($json['response']);
 		
 		// Walk $path 
 		// Note to coder: Future versions of PHP may let you dynamically walk a class without doing this.
