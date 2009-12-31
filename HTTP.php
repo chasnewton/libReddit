@@ -47,12 +47,12 @@ class HTTP {
 		return $this->request($url, $params);
 	}
 
-	public static function get($url) {
+	public static function _get($url) {
 		$http = new HTTP(null);
 		$http->get($url);
 	}
 
-	public static function post($url, $data) {
+	public static function _post($url, $data) {
 		$http = new HTTP(null);
 		$http->post($url, $data);
 	}
