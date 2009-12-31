@@ -11,7 +11,7 @@ class HTTP {
 	private function request($url, $params) {
 		// Handle cookie jar. 
 		if ($this->cookiejar != null && is_object($this->cookiejar))
-			$params ['http'] ['header'] = "Cookie: " . $this->cookiejar->toString();
+			$params['http']['header'] = $params['http']['header'] . "Cookie: " . $this->cookiejar->toString() . "\r\n";
 		
 		$ctx = stream_context_create ($params);
 
@@ -36,7 +36,7 @@ class HTTP {
 	}
 	
 	public function post($url, $data) {
-		$params = array ('http' => array ('method' => 'POST', 'content' => $data, 'Content-type' => 'application/x-www-form-urlencoded' ) );
+		$params = array ('http' => array ('method' => 'POST', 'content' => $data, 'header' => "Content-type: application/x-www-form-urlencoded\r\n" ) );
 		
 		return $this->request($url, $params);
 	}
