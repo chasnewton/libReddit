@@ -144,6 +144,10 @@ class User {
 		throw new Exception("User:call() is inacessible from this context.");
 	}
 
+	public function __toString() {
+		return $this->getUsername();
+	}
+
 }
 
 class _UserProperties extends Properties {
