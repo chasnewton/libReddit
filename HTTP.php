@@ -36,7 +36,7 @@ class HTTP {
 	}
 	
 	public function post($url, $data) {
-		$params = array ('http' => array ('method' => 'POST', 'content' => $data ) );
+		$params = array ('http' => array ('method' => 'POST', 'content' => $data, 'Content-type' => 'application/x-www-form-urlencoded' ) );
 		
 		return $this->request($url, $params);
 	}
@@ -55,6 +55,8 @@ class HTTP {
 			$exception = new HTTPException(404, "URL not found.");
 		else if(preg_match("@HTTP request failed! HTTP/.+? 403@",$errstr))
 			$exception = new HTTPException(403, "Forbidden.");
+		else if(preg_match("@HTTP request failed! HTTP/.+? 408@",$errstr))
+			$exception = new HTTPException(408, "Timeout.");
 		else if(preg_match("@HTTP request failed! HTTP/.+? 500@",$errstr))
 			$exception = new HTTPException(500, "Internal server error.");	
 		else if(preg_match("@HTTP request failed! HTTP/.+? 502@",$errstr))
