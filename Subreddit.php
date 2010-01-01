@@ -45,6 +45,13 @@ class Subreddit {
 	   unset($this->json);
 	}
 	
+	public function getInfo() {
+	   if (isset($this->html))
+	       return new _SubredditInfo($this->getAge(), $this->getCreator(), $this->getDescription());
+	   else
+	       echo "Error: $html is not set.";
+	}
+	
     public function getAge() {
         $result = $this->getHtml();
         $match = array();
@@ -109,6 +116,18 @@ class Subreddit {
         }
         
         return $output;
+    }
+}
+
+class _Subredditinfo {
+    public $age;
+    public $creator;
+    public $description;
+    
+    public __construct($age = null, $creator = null, $description = null) {
+        $this->age = $age;
+        $this->creator = $creator;
+        $this->description = $description;
     }
 }
 ?>
