@@ -10,7 +10,7 @@ class HTTP {
 
 	private function request($url, $params) {
 		// Handle cookie jar. 
-		if ($this->cookiejar != null && is_object($this->cookiejar))
+		if ($this->cookiejar != null && is_object($this->cookiejar) && isset($params['http']['header']))
 			$params['http']['header'] .= "Cookie: " . $this->cookiejar->toString() . "\r\n";
 		
 		$ctx = stream_context_create ($params);
